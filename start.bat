@@ -1,3 +1,3 @@
 :a
-python server.py
+python main.py
 goto a
