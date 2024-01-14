@@ -23,7 +23,6 @@ except:
     print("Required modules not found, installing them...")
     system("python -m pip install requests")
     system("python -m pip install discord")
-    system("cls || clear")
     print("All modules installed, please restart the script.")
     input("Press enter to restart...")
 print_logo()
