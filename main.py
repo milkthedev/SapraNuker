@@ -28,7 +28,7 @@ except:
 print_logo()
 # All parameters 
 TOKEN = input("Please enter bot token: ")
-LINK = 'https://YouTube.com/@SpigotRCE
+LINK = 'https://YouTube.com/@SpigotRCE'
 COMMAND_PREFIX = '!'
 MESSAGES = [
     '@everyone Hacked By ' +LINK,
