@@ -8,7 +8,7 @@ def print_logo():
     | |\  | |_| |   <  __/ |   
     |_| \_|\__,_|_|\_\___|_|   
                                                        
-        Made by kingslin420
+        Made by Milkthedev
     """)
 print_logo()
 try: 
@@ -28,7 +28,7 @@ except:
 print_logo()
 # All parameters 
 TOKEN = input("Please enter bot token: ")
-LINK = 'https://discord.gg/scansquad Server nuked by ScanSquad'
+LINK = 'https://YouTube.com/@SpigotRCE
 COMMAND_PREFIX = '!'
 MESSAGES = [
     '@everyone Hacked By ' +LINK,
